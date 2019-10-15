@@ -24,7 +24,7 @@ SECRET_KEY = 'kk%*4&q1x_hxa(&5fl(lrt8z5lr7^3bv%96*)8z923x2sj2auz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1']
 
 # Application definition
 
@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.users.apps.UsersConfig'
+    # 'apps.users'
 ]
 
 MIDDLEWARE = [
@@ -78,10 +80,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
+            # 补充jinja2引擎环境(配置后使用过滤器时无需加载过滤器即可直接使用)
+            'environment': 'utils.jinja2_env.environment'
         },
-        # 补充jinja2引擎环境(配置后使用过滤器时无需加载过滤器即可直接使用)
-        'environment': 'utils.jinja2_env.environment'
+
     },
 ]
 WSGI_APPLICATION = 'Meiduo.wsgi.application'
@@ -205,6 +209,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/statics/'
 # 指定静态文件加载路径
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'statics/static')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'statics')]
+
+# 指定本项目用户模型类
+
+AUTH_USER_MODEL = 'users.UserModel'
