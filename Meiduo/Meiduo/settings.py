@@ -35,8 +35,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.users.apps.UsersConfig'
     # 'apps.users'
+    'apps.users.apps.UsersConfig',
+    'apps.contents.apps.ContentsConfig',
+    'apps.verifications.apps.VerificationsConfig'
+
 ]
 
 MIDDLEWARE = [
@@ -126,6 +129,14 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
+    },
+    # 用户保存图片验证码 手机短信等数据
+    "message_code": {  # 默认
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/2",
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
     },
 }
 # 配置session的存储机制

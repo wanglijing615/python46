@@ -61,10 +61,34 @@ var vm = new Vue({
         check_username: function () {
             var re = /^[a-zA-Z0-9_-]{5,20}$/;
             if (re.test(this.username)) {
+
                 this.error_name = false;
+
             } else {
                 this.error_name_message = '请输入5-20个字符的用户名';
                 this.error_name = true;
+            }
+            //发送ajax/axios请求判断用户名是否重复
+            // then是response成功的回调,catch是response失败的回调
+            if (this.error_name ==false){
+                let url='/username/'+this.username+'/'
+                axios.get(url,{responseType: 'json'})
+                    .then(response => {
+                        //如果响应数据count为1说明数据库已存在此用户名
+                        // console.log(response.data.count);
+                        if (response.data.count == 1){
+                            this.error_name_message='用户名已存在'
+                            this.error_name=true
+                        }
+                        else {
+                            this.error_username = false;
+                            this.error_name_message='请输入5-20个字符的用户名'
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error.response)
+
+                    });
             }
 
 
@@ -91,6 +115,26 @@ var vm = new Vue({
             var re = /^1[345789]\d{9}$/;
             if (re.test(this.mobile)) {
                 this.error_phone = false;
+            // 发送axios请求判断手机号是否重复
+                let url='/mobile/'+this.mobile+'/'
+                axios.get(url)
+                    .then(response=>{
+                        if (response.data.count==1){
+                            this.error_mobile_message='用户名已存在,请重新输入'
+                            this.error_phone=true
+                        }
+                        else {
+                            this.error_phone=false
+                            this.error_mobile_message='请输入正确的手机号码'
+                        }
+
+                    })
+                    .catch(error=>{
+                        console.log(error.response)
+
+                    })
+
+
             } else {
                 this.error_mobile_message = '您输入的手机号格式不正确';
                 this.error_phone = true;
@@ -107,7 +151,7 @@ var vm = new Vue({
             }
 
         },
-        // 检查短信验证码
+        // 检查短信验证码是否为空
         check_sms_code: function () {
             if (!this.sms_code) {
                 this.error_sms_code_message = '请填写短信验证码';
@@ -126,9 +170,11 @@ var vm = new Vue({
         },
         // 发送手机短信验证码
         send_sms_code: function () {
+            //若已点击了发送则不再请求发送
             if (this.sending_flag == true) {
                 return;
             }
+            //防止连续点击调用
             this.sending_flag = true;
 
             // 校验参数，保证输入框有数据填写
