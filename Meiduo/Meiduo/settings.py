@@ -232,3 +232,6 @@ AUTHENTICATION_BACKENDS = [
     # 'apps.users.utils.UsernameMobileAuthBackend',
     'utils.users.UsernameMobile'
 ]
+
+#######设置LoginRequiredMixin里自动跳转的登陆url############################
+LOGIN_URL='/login/'

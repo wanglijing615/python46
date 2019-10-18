@@ -25,11 +25,11 @@
 				<div class="form_con">
 					<div class="form_input cur">
 						<form method="post" class="login">
-                            {{csrf_token}}
+                            {{ csrf_input }}
 							<input type="text" name="username" class="name_input" placeholder="请输入用户" @blur="check_username" v-model="username">
 							<div class="user_error" v-show="error_username">[[error_username_message]]</div>
                             <input type="password" name="pwd" class="pass_input" placeholder="请输入密码"@blur="check_pwd" v-model="password">
-							<div class="pwd_error"v-show="password">[[error_password_message]]</div>
+							<div class="pwd_error"v-show="error_password">[[error_password_message]]</div>
 							<div class="more_input clearfix">
 								<input type="checkbox" name="remembered" v-model="remembered">
 								<label>记住登录</label>

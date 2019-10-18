@@ -1,10 +1,8 @@
-from django.contrib.auth import login, authenticate
-from django.http import HttpResponse
+from django.contrib.auth import login
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django_redis import get_redis_connection
-# Create your views here.
 from django.views import View
 from apps.users.models import UserModel
 from utils.users import UsernameMobile
@@ -139,12 +137,14 @@ class LoginView(View):
         remembered=request.POST.get('remembered')
 
         # 判断必填项
-        if not all([username,password]):
+        if not all([username, password]):
             return JsonResponse({'code': -2, 'errormsg':'必填项为空'})
         # 判断用户信息和数据库中是否一致----认证用户
-        user =UsernameMobile.authenticate(username=username, password=password)
+        from django.contrib.auth import authenticate
+        user = authenticate(username=username, password=password)
+
         if user is None:
-            return render(request, 'login.html',{'errormsg':'用户名或密码错误'})
+            return render(request, 'login.html', {'errormsg':'用户名或密码错误'})
         # 状态保存--会话有效期为关闭浏览器
         login(request,user)
         # 记住登陆 ---设置会话有效期更长
@@ -152,4 +152,34 @@ class LoginView(View):
             # None 默认有效期2周
             request.session.set_expiry(None)
         # 结果响应
-        return redirect(reverse('contents:index'))
+        response = redirect(reverse('contents:index'))
+        # 设置cookie 给浏览器渲染登陆页时取数据
+        response.set_cookie('username', user.username, max_age=1)
+        return response
+
+class LogoutView(View):
+    """退出登陆"""
+    def get(self, request):
+        # 退出登陆关键： 清除session 通过调用logout(), 清除cookie,重定向回登陆页
+        # # 清除session
+        # request.session.flush()
+        from  django.contrib.auth import logout
+        logout(request)
+        # 删除cookie 或设置成有效期为0
+        response = redirect(reverse('contents:index'))
+        response.set_cookie('username', None, max_age=0)
+        return  redirect(reverse('users:login'))
+
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class UserCenterView(LoginRequiredMixin,View):
+    """用户中心"""
+    def get(self, request):
+        # 判断只有登陆用户才能进入个人中心
+        # if request.user.is_authenticated:
+        #     return render(request, 'user_center_info.html')
+        # else:
+        #     return redirect(reverse('users:login'))
+
+        return render(request, 'user_center_info.html')

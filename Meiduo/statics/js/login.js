@@ -26,9 +26,9 @@ var vm = new Vue({
         check_pwd: function(){
         	var re = /^[0-9A-Za-z]{8,20}$/;
 			if (re.test(this.password)) {
-                this.error_pwd = false;
+                this.error_password = false;
             } else {
-                this.error_pwd = true;
+                this.error_password = true;
             }
         },
         // 表单提交
