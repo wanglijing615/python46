@@ -19,7 +19,7 @@
 		<div class="r_con fr">
 			<div class="reg_title clearfix">
 				<h1>用户注册</h1>
-				<a href="../statics/login.html">登录</a>
+				<a href="login.html">登录</a>
 			</div>
 			<div class="reg_form clearfix">
 				<form method="post" class="register_form">
@@ -70,7 +70,7 @@
 						<span class="error_tip"v-show="error_allow">[[error_allow_message]]</span>
 					</li>
 					<li class="reg_sub">
-						<input type="submit" value="注 册">
+						<input type="submit" value="注 册" @click="on_submit">
 					</li>
 				</ul>				
 				</form>

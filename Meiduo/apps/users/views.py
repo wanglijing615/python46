@@ -1,12 +1,13 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django_redis import get_redis_connection
 # Create your views here.
 from django.views import View
 from apps.users.models import UserModel
-
+from utils.users import UsernameMobile
 
 '''
 get 返回注册页面
@@ -40,13 +41,13 @@ class RegisterView(View):
         password2 = request.POST.get('password2')
         mobile = request.POST.get('mobile')
         allow = request.POST.get('allow')
-        image_code_client =request.POST.get('image_code')
-        sms_code_client =request.POST.get('sms_code')
+        image_code_client = request.POST.get('pic_code')
+        sms_code_client = request.POST.get('sms_code')
         # image_code_id=request.POST.get('image_code_id')
 
         # 验证数据
         # 必填项
-        if not all([username, password, password2, mobile,image_code_client,sms_code_client]):
+        if not all([username, password, password2, mobile, image_code_client, sms_code_client]):
             return HttpResponseBadRequest('必填项不能为空')
         import re
         # 用户名规则
@@ -74,9 +75,9 @@ class RegisterView(View):
         # if image_code_client.lower() != image_code_server.lower():
         #     return render(request, 'register.html', {'image_code_errmsg': '验证码错误'})
         # 判断短信验证码的有效性
-        sms_code_server =redis_conn.get('sms_%s' % mobile)
-        sms_code_server=sms_code_server.decode()
-        if sms_code_client.lower()!=sms_code_server.lower:
+        sms_code_server = redis_conn.get('sms_%s' % mobile)
+        sms_code_server = sms_code_server.decode()
+        if sms_code_client.lower() != sms_code_server.lower:
             return render(request, 'register.html', {'sms_code_errmsg': '输入短信验证码有误'})
 
         # 判断是否勾选协议
@@ -97,6 +98,7 @@ class RegisterView(View):
         login(request, user)
         return render(request, 'index.html')
 
+
 # 用户名是否重复检查
 class UsernameCountView(View):
     def get(self, request, username):
@@ -108,6 +110,7 @@ class UsernameCountView(View):
             return JsonResponse({'count': -1})
         return JsonResponse({'count': count, 'msg': '用户名重复'})
 
+
 # 手机号是否重复检查
 class MobileCountView(View):
     def get(self, request, mobile):
@@ -117,3 +120,36 @@ class MobileCountView(View):
             print(e)
             return JsonResponse({'count': -1})
         return JsonResponse({'count': count, 'msg': '手机号重复'})
+
+
+class LoginView(View):
+    """用户登陆"""
+
+    def get(self, request):
+        return render(request, 'login.html')
+
+    def post(self, request):
+        '''
+        :param request: 请求对象
+        :return: 登陆成功页
+        '''
+        # 获取数据进行验证
+        username = request.POST.get('username')
+        password = request.POST.get('pwd')
+        remembered=request.POST.get('remembered')
+
+        # 判断必填项
+        if not all([username,password]):
+            return JsonResponse({'code': -2, 'errormsg':'必填项为空'})
+        # 判断用户信息和数据库中是否一致----认证用户
+        user =UsernameMobile.authenticate(username=username, password=password)
+        if user is None:
+            return render(request, 'login.html',{'errormsg':'用户名或密码错误'})
+        # 状态保存--会话有效期为关闭浏览器
+        login(request,user)
+        # 记住登陆 ---设置会话有效期更长
+        if remembered == 'on':
+            # None 默认有效期2周
+            request.session.set_expiry(None)
+        # 结果响应
+        return redirect(reverse('contents:index'))

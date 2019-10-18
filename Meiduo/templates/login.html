@@ -3,16 +3,16 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>美多商城-登录</title>
-	<link rel="stylesheet" type="text/css" href="css/reset.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-    <script type="text/javascript" src="js/host.js"></script>
-	<script type="text/javascript" src="js/vue-2.5.16.js"></script>
-    <script type="text/javascript" src="js/axios-0.18.0.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../statics/css/reset.css">
+	<link rel="stylesheet" type="text/css" href="../statics/css/main.css">
+    <script type="text/javascript" src="../statics/js/host.js"></script>
+	<script type="text/javascript" src="../statics/js/vue-2.5.16.js"></script>
+    <script type="text/javascript" src="../statics/js/axios-0.18.0.min.js"></script>
 </head>
 <body>
 	<div id="app" v-cloak>
 	<div class="login_top clearfix">
-		<a href="../templates/index.html" class="login_logo"><img src="images/logo02.png"></a>
+		<a href="index.html" class="login_logo"><img src="../statics/images/logo02.png"></a>
 	</div>
 	<div class="login_form_bg">
 		<div class="login_form_wrap clearfix">
@@ -25,22 +25,23 @@
 				<div class="form_con">
 					<div class="form_input cur">
 						<form method="post" class="login">
-							<input type="text" name="username" class="name_input" placeholder="请输入用户">
-							<div class="user_error">请输入5-20个字符的用户名</div>
-                            <input type="password" name="pwd" class="pass_input" placeholder="请输入密码">
-							<div class="pwd_error">请输入8-12位的密码</div>
+                            {{csrf_token}}
+							<input type="text" name="username" class="name_input" placeholder="请输入用户" @blur="check_username" v-model="username">
+							<div class="user_error" v-show="error_username">[[error_username_message]]</div>
+                            <input type="password" name="pwd" class="pass_input" placeholder="请输入密码"@blur="check_pwd" v-model="password">
+							<div class="pwd_error"v-show="password">[[error_password_message]]</div>
 							<div class="more_input clearfix">
-								<input type="checkbox" name="remembered">
+								<input type="checkbox" name="remembered" v-model="remembered">
 								<label>记住登录</label>
 							</div>
-							<input type="submit" value="登 录" class="input_submit">
+							<input type="submit" value="登 录" class="input_submit" @click="on_submit">
 						</form>
 					</div>
 				</div>
 				<div class="third_party">
 					<a href="javascript:;" class="qq_login">QQ</a>
 					<a href="#" class="weixin_login">微信</a>
-					<a href="../templates/register.html" class="register_btn">立即注册</a>
+					<a href="register.html" class="register_btn">立即注册</a>
 				</div>
 
 			</div>
@@ -61,8 +62,8 @@
 		<p>电话：010-****888    京ICP备*******8号</p>
 	</div>
 	</div>
-	<script type="text/javascript" src="js/host.js"></script>
-	<script type="text/javascript" src="js/common.js"></script>
-	<script type="text/javascript" src="js/login.js"></script>
+	<script type="text/javascript" src="../statics/js/host.js"></script>
+	<script type="text/javascript" src="../statics/js/common.js"></script>
+	<script type="text/javascript" src="../statics/js/login.js"></script>
 </body>
 </html>

@@ -227,3 +227,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'statics')]
 # 指定本项目用户模型类
 
 AUTH_USER_MODEL = 'users.UserModel'
+
+AUTHENTICATION_BACKENDS = [
+    # 'apps.users.utils.UsernameMobileAuthBackend',
+    'utils.users.UsernameMobile'
+]
