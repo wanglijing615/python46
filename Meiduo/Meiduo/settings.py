@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     # 'apps.users'
     'apps.users.apps.UsersConfig',
     'apps.contents.apps.ContentsConfig',
-    'apps.verifications.apps.VerificationsConfig'
+    'apps.verifications.apps.VerificationsConfig',
+    'apps.oauth.apps.OauthConfig'
 
 ]
 
