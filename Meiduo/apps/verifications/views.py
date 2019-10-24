@@ -5,6 +5,8 @@ from django.views import View
 from libs.captcha.captcha import captcha
 from django_redis import get_redis_connection
 from celery_tasks.sms import tasks
+
+
 # from libs.yuntongxun.sms import CCP
 
 
@@ -56,5 +58,10 @@ class SmsCode(View):
         if image_code.lower() != image_code_server.lower():
             return JsonResponse({'code': '-2', 'errmsg': '图片验证码无效'})
         sms_code = '%06d' % random.randint(0, 999999)
+        # 将sms_code存入redis
+        redis_conn.setex('sms_%s' % mobile, 300, sms_code)
+        code = redis_conn.get('sms_%s' % mobile)
+        print(code)
+        # 异步发送短信
         tasks.send_sms_code.delay(mobile, sms_code)
         return JsonResponse({'msg': 'ok', 'code': '0'})

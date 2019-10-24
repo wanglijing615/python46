@@ -24,20 +24,23 @@ var vm = new Vue({
         error_mobile: false,
         error_tel: false,
         error_email: false,
-        addresses: [],
+        // addresses: [],
         editing_address_index: '',
-        default_address_id: '',
+        // default_address_id: '',
         edit_title_index: '',
         input_title: '',
-        add_title:'新  增'
+        add_title:'新  增',
+        addresses: JSON.parse(JSON.stringify(addresses)),
+        default_address_id: default_address_id,
+
     },
     mounted(){
         // 获取省份数据
         this.get_provinces();
         // 将用户地址列表绑定到变量, addresses 是django模板传给vue的json字符串
-        // this.addresses = JSON.parse(JSON.stringify(addresses));
+        this.addresses = JSON.parse(JSON.stringify(addresses));
         // 默认地址id
-        // this.default_address_id = default_address_id;
+        this.default_address_id = default_address_id;
     },
     watch: {
         // 监听到省份id变化
@@ -49,7 +52,7 @@ var vm = new Vue({
                 })
                     .then(response => {
                         if (response.data.code == '0') {
-                            this.cities = response.data.sub_data.subs;
+                            this.cities = response.data.subs;
                         } else {
                             console.log(response.data);
                             this.cities = [];
@@ -70,7 +73,7 @@ var vm = new Vue({
                 })
                     .then(response => {
                         if (response.data.code == '0') {
-                            this.districts = response.data.sub_data.subs;
+                            this.districts = response.data.subs;
                         } else {
                             console.log(response.data);
                             this.districts = [];
@@ -93,6 +96,7 @@ var vm = new Vue({
                 .then(response => {
                     if (response.data.code == '0') {
                         this.provinces = response.data.province_list;
+                        console.log(this.provinces)
                     } else {
                         console.log(response.data);
                         this.provinces = [];

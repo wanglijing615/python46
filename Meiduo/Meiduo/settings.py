@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.contents.apps.ContentsConfig',
     'apps.verifications.apps.VerificationsConfig',
-    'apps.oauth.apps.OauthConfig'
+    'apps.oauth.apps.OauthConfig',
+    'apps.areas',
 
 ]
 
@@ -236,3 +237,22 @@ AUTHENTICATION_BACKENDS = [
 
 #######设置LoginRequiredMixin里自动跳转的登陆url############################
 LOGIN_URL='/login/'
+
+
+#######QQ登陆信息#####################################################
+QQ_CLIENT_ID = '101518219'
+
+QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
+
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
+#######发送邮件配置###################################################
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 25
+#发送邮件的邮箱
+EMAIL_HOST_USER = 'qi_rui_hua@163.com'
+#在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = '123456abc'
+#收件人看到的发件人
+EMAIL_FROM = '美多商城<qi_rui_hua@163.com>'
+EMAIL_VERIFY_URL='http://www.meiduo.site:8000/emailactive/'

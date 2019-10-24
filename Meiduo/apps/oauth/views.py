@@ -1,10 +1,16 @@
+import json
+import re
+
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseBadRequest
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
 
 from apps.oauth.models import OAuthQQUser
+from apps.oauth.utils import secret_openid, check_openid
 from apps.users.models import UserModel
 
 '''
@@ -34,6 +40,9 @@ class QQLoginView(View):
             token = oauth.get_access_token(code)
             # 4 获取openid
             open_id = oauth.get_open_id(token)
+            #
+
+            # open_id= secret_openid(open_id)
 
             # 判断用户是应该直接进入首页还是需要绑定账号
             from apps.oauth.models import OAuthQQUser
@@ -52,20 +61,22 @@ class QQLoginView(View):
 
         username = request.POST.get('mobile')
         pwd = request.POST.get('pwd')
-        sms_code = request.POST.get('sms_code')
-        openid = request.POST.get('openid')
+        # sms_code = request.POST.get('sms_code')
+        secret_openid = request.POST.get('openid')
+        #解密.
+        openid= check_openid(secret_openid)
         # 验证数据
         try:
             user = UserModel.objects.get(mobile=username)
         except UserModel.DoesNotExist:
             user = UserModel.objects.create_user(username=username, password=pwd, mobile=username)
         else:
-            if not UserModel.check_password(pwd):
+            if not user.check_password(pwd):
                 return HttpResponseBadRequest('密码错误')
         # 绑定用户和openid
         OAuthQQUser.objects.create(user=user, openid=openid)
         # 登陆
         login(request, user)
-        response = render(request, reverse('contents:index'))
-        response.set_cookie(username, username, expires=None)
+        response = redirect(reverse('contents:index'))
+        response.set_cookie('username', user.username, expires=None)
         return response
