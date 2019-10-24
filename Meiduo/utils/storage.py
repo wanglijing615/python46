@@ -25,7 +25,7 @@ class MyStorage(Storage):
         # 默认url 是返回name
         # group1/M00/00/01/CtM3BVrLmc-AJdVSAAEI5Wm7zaw8639396
         # http://ip:port/ + name
-        return "http://192.168.229.148:8888/" + name
+        return "http://192.168.179.130:8888/" + name
 
 
 
