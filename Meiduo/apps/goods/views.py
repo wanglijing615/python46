@@ -1,14 +1,19 @@
+import datetime
+import json
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator, EmptyPage
-from django.db.models.sql import constants
 from django.http import HttpResponseBadRequest
 from django.http import HttpResponseNotFound
 from django.http import JsonResponse
+from django.utils import timezone
+from apps.goods.models import GoodsCategory, SKU, GoodsVisitCount
 from django.shortcuts import render
 from django.views import View
-
 from apps.contents.utils import get_categories
-from apps.goods.models import GoodsCategory, SKU
+from apps.goods.models import SKU, GoodsCategory
 from apps.goods.utls import get_breadcrumb
+from utils.response_code import RETCODE
 
 """
 href="{{ url('goods:list', args=(category.id, page_num)) }}?sort=default"
@@ -105,3 +110,129 @@ class HotGoodsView(View):
             })
 
         return JsonResponse({'code': 0, 'errmsg': 'OK', 'hot_skus': hot_skus})
+
+
+# /detail/(?P<sku_id>\d+)/
+
+
+
+class DetailView(View):
+    def get(self, request, sku_id):
+
+        # 获取当前sku的信息
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return render(request, '404.html')
+
+        # 查询商品频道分类
+        categories = get_categories()
+        # 查询面包屑导航
+        breadcrumb = get_breadcrumb(sku.category)
+
+        # 构建当前商品的规格键
+        sku_specs = sku.specs.order_by('spec_id')
+        sku_key = []
+        for spec in sku_specs:
+            sku_key.append(spec.option.id)
+        # 获取当前商品的所有SKU
+        skus = sku.spu.sku_set.all()
+        # 构建不同规格参数（选项）的sku字典
+        spec_sku_map = {}
+        for s in skus:
+            # 获取sku的规格参数
+            s_specs = s.specs.order_by('spec_id')
+            # 用于形成规格参数-sku字典的键
+            key = []
+            for spec in s_specs:
+                key.append(spec.option.id)
+            # 向规格参数-sku字典添加记录
+            spec_sku_map[tuple(key)] = s.id
+        # 获取当前商品的规格信息
+        goods_specs = sku.spu.specs.order_by('id')
+        # 若当前sku的规格信息不完整，则不再继续
+        if len(sku_key) < len(goods_specs):
+            return
+        for index, spec in enumerate(goods_specs):
+            # 复制当前sku的规格键
+            key = sku_key[:]
+            # 该规格的选项
+            spec_options = spec.options.all()
+            for option in spec_options:
+                # 在规格参数sku字典中查找符合当前规格的sku
+                key[index] = option.id
+                option.sku_id = spec_sku_map.get(tuple(key))
+            spec.spec_options = spec_options
+
+        # 渲染页面
+        context = {
+            'categories': categories,
+            'breadcrumb': breadcrumb,
+            'sku': sku,
+            'specs': goods_specs,
+        }
+
+        return render(request, 'detail.html', context)
+
+
+# /detail/visit/(?P<category_id>\d+)/
+
+class DetailVisitView(View):
+    """详情页分类商品访问量"""
+
+    def post(self, request, category_id):
+        """记录分类商品访问量"""
+
+        # 1.查询商品信息是否存在
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except GoodsCategory.DoesNotExist:
+            return HttpResponseBadRequest('商品不存在')
+        # 2.查询今天是否已创建过统计记录 没有则创建,有则修改
+        # ① 构建今天日期变量
+        # t = timezone.localtime()
+        # today_str = '%d-%02d-%02d' % (t.year, t.month, t.day)
+        # today_date = datetime.datetime.strptime(today_str, '%Y-%m-%d')
+        today_date = timezone.localdate()
+        try:
+            # 根据外键字段关联查询数据
+            count_data = category.goodsvisitcount_set.get(date=today_date)
+        except GoodsVisitCount.DoesNotExist:
+            # count_obj = GoodsVisitCount()
+            # count_obj.category = category
+            # count_obj.count += 1
+            # count_obj.save()
+            GoodsVisitCount.objects.create(
+                category=category,
+                date=today_date,
+                count=1
+            )
+            return JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+        else:
+            count_data.count += 1
+            count_data.save()
+            return JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
+
+class UserBrowseHistory(LoginRequiredMixin, View):
+    """用户浏览记录"""
+
+    def post(self, request,cat):
+        """保存用户浏览记录"""
+        # 获取浏览商品id
+        sku_id = json.loads(request.body.decode()).get('sku_id')
+        # 判断商品信息是否存在,如果不存在返回错误
+        if not SKU.objects.filter(id=sku_id):
+            return HttpResponseBadRequest('商品不存在')
+        
+        # 查询用户是否存在浏览量记录,如果不存在 创建浏览记录 并返回响应
+        # 如果存在,遍历浏览列表,判断商品是否已在记录中,有则删除商品原有的记录,增加新记录,没有则直接增加新记录
+        # 增加记录时,最多5个数据,多余的删除
+        pass
+
+    def get(self, request):
+        """获取用户浏览记录"""
+        # 判断用户是否登陆,只有登陆用户可以查看浏览记录
+        # 登陆用户查询数据
+        # 返回响应
+        pass
