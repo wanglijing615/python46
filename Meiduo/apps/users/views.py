@@ -135,6 +135,7 @@ class LoginView(View):
             return JsonResponse({'code': -2, 'errormsg': '必填项为空'})
         # 判断用户信息和数据库中是否一致----认证用户
         from django.contrib.auth import authenticate
+        # 验证用户名密码是否正确
         user = authenticate(username=username, password=password)
 
         if user is None:
