@@ -1,5 +1,6 @@
 import datetime
 import json
+import pickle
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator, EmptyPage
@@ -7,6 +8,8 @@ from django.http import HttpResponseBadRequest
 from django.http import HttpResponseNotFound
 from django.http import JsonResponse
 from django.utils import timezone
+from django_redis import get_redis_connection
+
 from apps.goods.models import GoodsCategory, SKU, GoodsVisitCount
 from django.shortcuts import render
 from django.views import View
@@ -175,7 +178,7 @@ class DetailView(View):
         return render(request, 'detail.html', context)
 
 
-# /detail/visit/(?P<category_id>\d+)/
+# l;/(?P<category_id>\d+)/
 
 class DetailVisitView(View):
     """详情页分类商品访问量"""
@@ -217,22 +220,50 @@ class DetailVisitView(View):
 class UserBrowseHistory(LoginRequiredMixin, View):
     """用户浏览记录"""
 
-    def post(self, request,cat):
+    def post(self, request):
         """保存用户浏览记录"""
         # 获取浏览商品id
         sku_id = json.loads(request.body.decode()).get('sku_id')
         # 判断商品信息是否存在,如果不存在返回错误
         if not SKU.objects.filter(id=sku_id):
             return HttpResponseBadRequest('商品不存在')
-        
-        # 查询用户是否存在浏览量记录,如果不存在 创建浏览记录 并返回响应
-        # 如果存在,遍历浏览列表,判断商品是否已在记录中,有则删除商品原有的记录,增加新记录,没有则直接增加新记录
-        # 增加记录时,最多5个数据,多余的删除
-        pass
+        else:
+            # 查询用户是否存在浏览量记录,如果不存在 创建浏览记录 并返回响应
+            redis_conn = get_redis_connection('history')
+            # 创建Redis管道
+            pl = redis_conn.pipeline()
+            user_id = request.user.id
+
+            # 将Redis请求添加到队列
+            # 增加记录时,最多5个数据,多余的删除
+            # 先去重
+            pl.lrem('history_%s' % user_id, 0, sku_id)
+            # 再存储
+            pl.lpush('history_%s' % user_id, sku_id)
+            # 最后截取
+            pl.ltrim('history_%s' % user_id, 0, 4)
+            # 执行管道
+            pl.execute()
+            return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok'})
 
     def get(self, request):
         """获取用户浏览记录"""
         # 判断用户是否登陆,只有登陆用户可以查看浏览记录
         # 登陆用户查询数据
-        # 返回响应
-        pass
+        user_id = request.user.id
+        redis_conn = get_redis_connection('history')
+        # pl = redis_conn.pipeline()
+        # history_list = pl.lrange('history_%s' % user_id, 0, -1)
+        # pl.execute()
+        sku_ids = redis_conn.lrange('history_%s' % request.user.id, 0, -1)
+        # 组装数据
+        data_list = []
+        for sku in sku_ids:
+            sku_obj = SKU.objects.get(id=sku)
+            data_list.append({
+                'id': sku_obj.id,
+                'name': sku_obj.name,
+                'default_image_url': sku_obj.default_image.url,
+                'price': sku_obj.price
+            })
+        return JsonResponse({'code': 0, 'errmsg': 'OK', 'skus': data_list})
