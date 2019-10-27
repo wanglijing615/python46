@@ -17,7 +17,7 @@ def merge_cart_cookie_to_redis(request, user, response):
         # 取redis的数据
         redis_conn = get_redis_connection('carts')
         # carts_data = redis_conn.hmget('carts_%s' % user.id)
-        selected_data = redis_conn.smembers('carts_%s' % user.id)
+        selected_data = redis_conn.smembers('selected_%s' % user.id)
         # 从reids获取的数据为bytes类型,需进行转换组装数据
         redis_id_list = []
         for id in selected_data:
@@ -27,13 +27,13 @@ def merge_cart_cookie_to_redis(request, user, response):
         # {sku_id:{'count':2,'selected':True},}
         # cookie_select_id_list = []
         # cookie_unselected_id_list = []
-        for sku_id, value in cookie_dict.itmes:
+        for sku_id, value in cookie_dict.items():
             redis_conn.hset('carts_%s' % user.id, sku_id, int(value['count']))
-            if value['selected'] is False:
-                redis_conn.sadd('carts_%s' % user.id, sku_id)
+            if value['selected']:
+                redis_conn.sadd('selected_%s' % user.id, sku_id)
                 # cookie_unselected_id_list.append(sku_id)
             else:
-                redis_conn.srem('carts_%s' % user.id, sku_id)
+                redis_conn.srem('selected_%s' % user.id, sku_id)
                 # cookie_select_id_list.append(sku_id)
 
         # 删除cookie数据

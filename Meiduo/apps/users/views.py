@@ -8,6 +8,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django_redis import get_redis_connection
 from django.views import View
+
+from apps.carts.utils import merge_cart_cookie_to_redis
 from apps.users.models import UserModel
 from celery_tasks.email import tasks
 from celery_tasks.email.tasks import send_email
@@ -150,6 +152,7 @@ class LoginView(View):
         response = redirect(reverse('contents:index'))
         # 设置cookie 给浏览器渲染登陆页时取数据
         response.set_cookie('username', user.username, max_age=1)
+        response = merge_cart_cookie_to_redis(request, user, response)
         return response
 
 

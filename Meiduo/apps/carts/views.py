@@ -26,7 +26,7 @@ class CartsView(View):
         user = request.user
         sku_id = json.loads(request.body.decode()).get('sku_id')
         count = json.loads(request.body.decode()).get('count')
-        selected = json.loads(request.body.decode()).get('selected')
+        selected = json.loads(request.body.decode()).get('selected', True)
         if not all([]):
             return HttpResponseBadRequest('缺少必传参数')
         # 判断用户是否为登陆用户
