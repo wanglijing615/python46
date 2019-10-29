@@ -170,12 +170,11 @@ class AddressView(LoginRequiredMixin, View):
             }
             address_list.append(address_dict)
             # 组织返回渲染content
-            content = {
-                'default_address_id': request.user.default_address_id,
-                'addresses': address_list
-            }
+        content = {
+            'default_address_id': request.user.default_address_id,
+            'addresses': address_list
+        }
         return render(request, 'user_center_site.html', context=content)
-        pass
 
 
 class UpdateAddressView(View):

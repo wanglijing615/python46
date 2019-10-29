@@ -24,7 +24,7 @@ SECRET_KEY = 'kk%*4&q1x_hxa(&5fl(lrt8z5lr7^3bv%96*)8z923x2sj2auz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1']
+ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1', '192.168.103.158','192.168.179.133']
 
 # Application definition
 
@@ -112,7 +112,7 @@ WSGI_APPLICATION = 'Meiduo.wsgi.application'
 # }
 # 配置数据库信息
 DATABASES = {
-    'default': {
+    'default': {# 写（主机）
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
         'HOST': '127.0.0.1',  # 数据库主机
         'PORT': 3306,  # 数据库端口
@@ -120,7 +120,18 @@ DATABASES = {
         'PASSWORD': 'mysql',  # 数据库用户密码
         'NAME': 'meiduo_mall'  # 数据库名字
     },
+    'slave': {  # 读（从机）
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '127.0.0.1',
+        'PORT': 8306,
+        'USER': 'root',
+        'PASSWORD': 'mysql',
+        'NAME': 'meiduo_mall'
+    }
 }
+
+#######数据库读写路由配置#######################################
+DATABASE_ROUTERS = ['utils.db_router.MasterSlaveDBRouter']
 
 # redis配置
 CACHES = {
@@ -296,3 +307,7 @@ CRONJOBS = [
     # 每1分钟生成一次首页静态文件
     ('*/1 * * * *', 'apps.contents.crons.generate_static_index_html', '>> ' + os.path.join(BASE_DIR, 'logs/crontab.log'))
 ]
+
+# sudo docker run --name mysql-slave -e MYSQL_ROOT_PASSWORD=mysql -d --network=host -v /home/python/Desktop/docker/mysql_slave/data:/var/lib/mysql -v /home/python/Desktop/docker/mysql_slave/mysql.conf.d:/etc/mysql/mysql.conf.d mysql:5.7.22
+
+# sudo docker run --name mysql-slave -e MYSQL_ROOT_PASSWORD=mysql -d --network=host -v /home/python/mysql_slave/data:/var/lib/mysql -v /home/python/mysql_slave/mysqld.cnf:/etc/mysql/mysqld.cnf mysql:5.7.22
