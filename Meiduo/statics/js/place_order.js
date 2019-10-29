@@ -41,8 +41,8 @@ var vm = new Vue({
                     .then(response => {
                         if (response.data.code == '0') {
                             location.href = '/orders/success/?order_id='+response.data.order_id
-                                        +'&payment_amount='+this.payment_amount
-                                        +'&pay_method='+this.pay_method;
+                                        +'&payment_amount='+response.data.payment_amount
+                                        +'&pay_method='+response.data.pay_method;
                         } else if (response.data.code == '4101') {
                             location.href = '/login/?next=/orders/settlement/';
                         } else {
