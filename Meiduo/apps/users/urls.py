@@ -12,5 +12,6 @@ urlpatterns = [
     url(r'^center/$', views.UserCenterView.as_view(), name='center'),
     url(r'^emails/$', views.EmailView.as_view(), name='emails'),
     url(r'^emailactive/$', views.EmailActive.as_view(), name='emailactive'),
+    url(r'^findpassword/$', views.FindPasswordView.as_view(), name='findpassword'),
 
 ]

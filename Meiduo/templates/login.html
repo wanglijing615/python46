@@ -32,7 +32,7 @@
 							<div class="pwd_error"v-show="error_password">[[error_password_message]]</div>
 							<div class="more_input clearfix">
 								<input type="checkbox" name="remembered" v-model="remembered">
-								<label>记住登录</label>
+								<label>记住登录</label> <a href="http://www.meiduo.site:8000/findpassword/" class="forget_pwd">忘记密码</a>
 							</div>
 							<input type="submit" value="登 录" class="input_submit" @click="on_submit">
 						</form>
@@ -40,6 +40,7 @@
 				</div>
 				<div class="third_party">
 					<a href="https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=101518219&redirect_uri=http://www.meiduo.site:8000/oauth_callback&state=xxxx" class="qq_login">QQ</a>
+
 					<a href="#" class="weixin_login">微信</a>
 					<a href="{{url('users:register')}}" class="register_btn">立即注册</a>
 				</div>

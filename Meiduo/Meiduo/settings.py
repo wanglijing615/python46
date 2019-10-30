@@ -24,7 +24,7 @@ SECRET_KEY = 'kk%*4&q1x_hxa(&5fl(lrt8z5lr7^3bv%96*)8z923x2sj2auz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1', '192.168.103.158','192.168.179.133']
+ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1', '192.168.179.133']
 
 # Application definition
 
@@ -131,7 +131,7 @@ DATABASES = {
 }
 
 #######数据库读写路由配置#######################################
-DATABASE_ROUTERS = ['utils.db_router.MasterSlaveDBRouter']
+# DATABASE_ROUTERS = ['utils.db_router.MasterSlaveDBRouter']
 
 # redis配置
 CACHES = {

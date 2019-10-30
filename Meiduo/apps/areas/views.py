@@ -12,6 +12,8 @@ from apps.areas.models import Area
 from apps.users.models import Address
 import logging
 
+from utils.response_code import RETCODE
+
 logger = logging.getLogger('django')
 
 
@@ -72,7 +74,7 @@ class AreasView(View):
 
 
 class AddressCreateView(LoginRequiredMixin, View):
-    """新增地址"""
+    """新增收货地址"""
 
     def post(self, request):
         # 1.判断用户已添加的地址数量 if >20 则响应已达到添加上限
@@ -178,7 +180,7 @@ class AddressView(LoginRequiredMixin, View):
 
 
 class UpdateAddressView(View):
-    """修改地址"""
+    """修改收货地址"""
 
     # url = this.host + '/addresses/' + this.addresses[this.editing_address_index].id + '/';
 
@@ -242,3 +244,61 @@ class UpdateAddressView(View):
 
         return JsonResponse({'code': 0, 'errmsg': '修改地址成功', 'address': address_dict})
 
+    def delete(self, request, address_id):
+        # /addresses/(?P<address_id>\d+)/
+
+        # 校验地址是否存在
+        try:
+            address = Address.objects.get(id=address_id)
+
+            # 将地址逻辑删除设置为True
+            address.is_deleted = True
+            address.save()
+        except Address.DoesNotExist:
+            return JsonResponse({'code': 0, 'errmsg': '地址信息异常,删除失败'})
+        else:
+            return JsonResponse({'code': 0, 'errmsg': '删除地址成功'})
+
+
+class DefaultAddressView(LoginRequiredMixin, View):
+    """设置默认地址"""
+
+    def put(self, request, address_id):
+        """设置默认地址"""
+        try:
+            # 接收参数,查询地址
+            address = Address.objects.get(id=address_id)
+
+            # 设置地址为默认地址
+            request.user.default_address = address
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse({'code': RETCODE.DBERR, 'errmsg': '设置默认地址失败'})
+
+        # 响应设置默认地址结果
+        return JsonResponse({'code': RETCODE.OK, 'errmsg': '设置默认地址成功'})
+
+
+class UpdateTitleAddressView(LoginRequiredMixin, View):
+    """设置地址标题"""
+
+    def put(self, request, address_id):
+        """设置地址标题"""
+        # 接收参数：地址标题
+        json_dict = json.loads(request.body.decode())
+        title = json_dict.get('title')
+
+        try:
+            # 查询地址
+            address = Address.objects.get(id=address_id)
+
+            # 设置新的地址标题
+            address.title = title
+            address.save()
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse({'code': RETCODE.DBERR, 'errmsg': '设置地址标题失败'})
+
+        # 4.响应删除地址结果
+        return JsonResponse({'code': RETCODE.OK, 'errmsg': '设置地址标题成功'})

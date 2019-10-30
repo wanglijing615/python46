@@ -263,6 +263,8 @@ var vm = new Vue({
         },
         // 删除地址
         delete_address(index){
+            console.log(this.addresses)
+            console.log(this.addresses[index])
             var url = this.host + '/addresses/' + this.addresses[index].id + '/';
             axios.delete(url, {
                 headers: {

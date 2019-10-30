@@ -264,3 +264,38 @@ class EmailActive(View):
             login(request, user)
             response.set_cookie('username', username, None)
             return redirect(reverse('contents:index'))
+
+
+class FindPasswordView(View):
+    """忘记密码"""
+    def get(self, request):
+
+        return render(request, 'find_password.html')
+
+'''
+ 表单一: 用户输入 用户名 验证码
+ 点击下一步:get(this.host+'/accounts/' + this.username + '/sms/token/?text='+ this.image_code + '&image_code_id=' + this.image_code_id
+ 1.接收参数:账号,验证码
+ 2.验证参数:验证正确后,生成用户token并保存
+ 3.返回响应 :     this.mobile = response.data.mobile;
+                this.access_token = response.data.access_token;
+ 注意为失效性考虑: access_token是随机生成一个token 并关联用户保存到redis ,用于下一步提交请求时作为参数输入,并验证token是否失效
+ 验证成功则显示表单二:
+ 表单二:用户输入 手机号 短信验证码--点击验证码标签请求获取短信验证码--上一步生成的token也需要传 axios.get(this.host+'/sms_codes/?access_token='+ this.access_token
+ 点击下一步 get(this.host + '/accounts/' + this.username + '/password/token/?sms_code=' + this.sms_code,
+ 1.接收参数:
+ 2.校验参数:
+ 3.返回响应:              this.user_id = response.data.user_id;
+                        this.access_token = response.data.access_token;
+验证成功则显示表单三:
+表单三:用户输入新密码 确认密码
+点击下一步: axios.post(this.host + '/users/'+ this.user_id +'/password/', {
+                        password: this.password,
+                        password2: this.password2,
+                        access_token: this.access_token
+                    }
+
+1.接收参数:
+2.验证参数
+3.返回响应 等待几秒后自动跳转登陆
+'''
